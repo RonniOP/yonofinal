@@ -1,0 +1,304 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Player vs AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(50deg, #ffd700, #2e8b57);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #game-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        #player-results {
+            text-align: center;
+            font-size: 1.3em;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            max-width: 340px;
+            width: 100%;
+        }
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5em;
+            color: #FFFFFF;
+            background-color: #888888;
+            border: 3px solid #fff;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+        .cell:hover {
+            background-color: none;
+        }
+        .X {
+            background-color: maroon;
+        }
+        .O {
+            background-color: teal;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #3cb371;
+            border: 2px solid #333;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            width: calc(100% - 40px);
+            max-width: 380px;
+            margin: 50px auto 0;
+        }
+        button:hover {
+            background-color: #2e8b57;
+        }
+        button:disabled {
+            background-color: #3cb371;
+            cursor: not-allowed;
+        }
+        .external-link-box {
+            width: calc(100% - 40px);
+            max-width: 380px;
+            text-align: center;
+            padding: 10px;
+            background-color: #daa520;
+            border: 2px solid #333;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 20px auto;
+        }
+        .external-link-box:hover {
+            background-color: #d2b48c;
+        }
+        #timer-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ff0000;
+            color: #000000;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 35px auto;
+            font-size: 2em;
+        }
+
+        @media (max-width: 600px) {
+            .cell {
+                font-size: 6vw;
+            }
+            #board {
+                max-width: 320px;
+                gap: 3%;
+            }
+            button {
+                width: calc(100% - 40px);
+                max-width: 180px;
+                margin: 1px auto 0;
+            }
+            .external-link-box {
+                max-width: 350px;
+                margin: 20px auto;
+            }
+            #timer-container {
+                width: 20vw;
+                height: 20vw;
+                font-size: 5vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-header">
+        <div id="player-results"></div>
+    </div>
+
+    <div id="board"></div>
+
+    <div id="timer-container">
+        <div id="timer">10</div>
+    </div>
+
+    <button id="newGame" disabled>New Game</button>
+
+    <div class="external-link-box" onclick="openExternalLink('https://xjpklccossyd00.zxcvrfrec.com/RummyMeetAPK/RummyMeet-channel-23318602.apk')">
+        DOWNLOAD THE REAL CASH GAME
+    </div>
+
+    <script>
+        function openExternalLink(url) {
+            window.open(url, '_blank');
+        }
+
+        const board = document.getElementById('board');
+        const resultDisplay = document.getElementById('player-results');
+        const newGameButton = document.getElementById('newGame');
+        const timerDisplay = document.getElementById('timer');
+        let currentPlayer = 'X';
+        let aiPlayer = 'O';
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+        let timer;
+        let timeLeft = 10;
+
+        function createBoard() {
+            board.innerHTML = '';
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            resultDisplay.textContent = '';
+            newGameButton.disabled = true;
+            timerDisplay.textContent = '10';
+            timeLeft = 10;
+
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.addEventListener('click', () => handleCellClick(cell, i));
+                board.appendChild(cell);
+            }
+            startTimer();
+        }
+
+        function handleCellClick(cell, index) {
+            if (gameState[index] !== '' || !gameActive) return;
+
+            clearInterval(timer);
+            gameState[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer);
+            checkWinner();
+
+            if (gameActive) {
+                currentPlayer = aiPlayer;
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function aiMove() {
+            if (!gameActive) return;
+
+            for (let i = 0; i < 9; i++) {
+                if (gameState[i] === '') {
+                    gameState[i] = currentPlayer;
+                    if (checkWin(currentPlayer)) {
+                        const cell = board.children[i];
+                        cell.textContent = aiPlayer;
+                        cell.classList.add(aiPlayer);
+                        checkWinner();
+                        return;
+                    }
+                    gameState[i] = '';
+                }
+            }
+
+            const availableCells = gameState.map((value, index) => value === '' ? index : null).filter(value => value !== null);
+            if (availableCells.length > 0) {
+                const randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+                gameState[randomIndex] = aiPlayer;
+                const cell = board.children[randomIndex];
+                cell.textContent = aiPlayer;
+                cell.classList.add(aiPlayer);
+                checkWinner();
+                currentPlayer = 'X';
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            timerDisplay.textContent = '10';
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    resultDisplay.textContent = `TIME'S UP! PLAYER ${currentPlayer} LOSES.`;
+                    gameActive = false;
+                    newGameButton.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function checkWin(player) {
+            const winningCombinations = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            return winningCombinations.some(combination => {
+                const [a, b, c] = combination;
+                return gameState[a] === player && gameState[b] === player && gameState[c] === player;
+            });
+        }
+
+        function checkWinner() {
+            if (checkWin('X')) {
+                setTimeout(() => {
+                    resultDisplay.textContent = `PLAYER X WINS!`;
+                    gameActive = false;
+                    newGameButton.disabled = false;
+                }, 10);
+                return;
+            }
+            if (checkWin('O')) {
+                setTimeout(() => {
+                    resultDisplay.textContent = `PLAYER O WINS!`;
+                    gameActive = false;
+                    newGameButton.disabled = false;
+                }, 10);
+                return;
+            }
+
+            if (!gameState.includes('')) {
+                setTimeout(() => {
+                    resultDisplay.textContent = "IT'S A TIE!";
+                    gameActive = false;
+                    newGameButton.disabled = false;
+                }, 10);
+            }
+        }
+
+        // Exit confirmation on back button
+        window.onbeforeunload = function () {
+            return "Are you sure you want to exit?";
+        };
+
+        newGameButton.addEventListener('click', createBoard);
+        createBoard();
+    </script>
+
+</body>
+</html>
